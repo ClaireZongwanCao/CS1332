@@ -1,0 +1,185 @@
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Random;
+
+public class SkipList<T extends Comparable<? super T>>
+    implements SkipListInterface<T> {
+    // Do not add any additional instance variables
+    private CoinFlipper coinFlipper;
+    private int size;
+    private Node<T> head;
+
+    /**
+     * Constructs a SkipList object that stores data in ascending order.
+     * When an item is inserted, the flipper is called until it returns a tails.
+     * If, for an item, the flipper returns n heads, the corresponding node has
+     * n + 1 levels.
+     *
+     * @param coinFlipper the source of randomness
+     */
+    public SkipList(CoinFlipper coinFlipper) {
+    	head = new Node<T>(null,0);
+    	size = 0;
+    	this.coinFlipper = coinFlipper;
+    }
+
+    @Override
+    public T first() {
+    	if (size == 0) {
+    		throw new java.util.NoSuchElementException("the skip list is empty!");
+    	}
+    	Node<T> node = head;
+    	while (node.getLevel() != 1) {
+    		node = node.getDown();
+    	}
+    	return node.getNext().getData();
+    }
+
+    @Override
+    public T last() {
+    	if (size == 0) {
+    		throw new java.util.NoSuchElementException("the skip list is empty!");
+    	}
+    	Node<T> node = head;
+    	while (node.getLevel() != 1) {
+    		node = node.getDown();
+    	}
+    	while (node.getNext() != null) {
+    		node = node.getNext();
+    	}
+    	return node.getData();
+    }
+
+    @Override
+    public void put(T data) {
+    	int i = 1;
+    	Node<T> above = null;
+    	Node<T> after = search(data);
+    	if (after.getData().compareTo(data) == 0) {
+    		after.setData(data);
+    	} else {
+    		while (coinFlipper.flipCoin() == CoinFlipper.Coin.HEADS) {
+    	    	Node<T> node = new Node<T>(data, i);
+    	    	if (node.getLevel() >= head.getLevel()) {
+    	    		Node<T> h = new Node<T> (null,head.getLevel() + 1);
+    	    		head = insertaboveafter(head, null, h);
+    	    	}
+    			above = insertaboveafter(above, after, node);
+    			while (after.getUp() == null) {
+        			after = after.getPrev();
+        		}
+        		after = after.getUp();
+    		}
+    	size++;	
+    	}
+    	
+    }
+    
+    private Node<T> insertaboveafter(Node<T> above, Node<T> after, Node<T> node) {
+    	if (after != null) {
+    		node.setNext(after.getNext());
+    		after.setNext(node);
+    		node.setPrev(after);
+    	}
+    	if (node.getNext() != null) {
+    		node.getNext().setPrev(node);
+    	}    	
+    	if (above != null) {
+    		above.setUp(node);
+        	node.setDown(above);
+    	}   	
+    	return node;
+    }
+    
+    private Node<T> search(T data) {
+    	Node<T> node = head;
+    	while (node.getDown() != null) {
+    		node = node.getDown();
+    	}
+    	while ((node.getNext() != null) && (node.getNext().getData().compareTo(data) <= 0)) {
+    		node = node.getNext();
+    	}
+    	return node;
+    }
+
+    private void check(T data) {
+    	if (data == null) {
+    		throw new IllegalArgumentException("data is null");
+    	}
+    }
+    
+    @Override
+    public T remove(T data) {
+    	check(data);
+    	Node<T> target = search(data);
+    	if (target.getData().compareTo(data) != 0) {
+    		throw new java.util.NoSuchElementException("no such item!");
+    	}
+    	else { 
+    		T res = target.getData();
+    		while (target != null) {
+    			target.getPrev().setNext(target.getNext());
+    			target.getNext().setPrev(target.getPrev());
+    			target = target.getUp();
+    		}
+    		size--;
+    		return res;
+    	}
+    }
+
+    @Override
+    public boolean contains(T data) {
+    	check(data);
+    	Node<T> node = search(data);
+    	if (node.getData().compareTo(data) == 0) {
+    		return true;
+    	} else {
+    		return false;
+    	}
+    }
+
+    @Override
+    public T get(T data) {
+    	check(data);
+    	Node<T> node = search(data);
+    	if (node.getData().compareTo(data) == 0) {
+    		return node.getData();
+    	}
+    	else throw new java.util.NoSuchElementException("the item is not in skip list!");
+    }
+
+    @Override
+    public int size() {
+    	return size;
+    }
+
+    @Override
+    public void clear() {
+    	head = new Node<T>(null, 0);
+    	size = 0;
+    }
+
+    @Override
+    public Set<T> dataSet() {
+    	Set<T> set =  new HashSet<T>();
+    	if (size == 0) {
+    		return null;
+    	} else {
+    		Node<T> node = head;
+        	while (node.getLevel() != 1) {
+        		node = node.getDown();
+        	}
+        	while (node != null) {
+        		set.add(node.getData());
+        		node = node.getNext();
+        	}
+    	}
+    	return set;
+    }
+
+    @Override
+    public Node<T> getHead() {
+        return head;
+    }
+
+}
