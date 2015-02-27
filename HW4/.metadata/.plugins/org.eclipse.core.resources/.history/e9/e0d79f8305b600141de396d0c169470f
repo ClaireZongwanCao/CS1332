@@ -1,0 +1,101 @@
+public class MaxHeap<T extends Comparable<? super T>>
+    implements HeapInterface<T> {
+
+    private T[] arr;
+    private int size;
+    // Do not add any more instance variables
+
+    /**
+     * Creates a MaxHeap.
+     */
+    public MaxHeap() {
+    	arr = (T[]) new Comparable[STARTING_SIZE];
+    	size = 0;
+    }
+
+    @Override
+    public void add(T item) {
+    	if (item == null) {
+    		throw new IllegalArgumentException();
+    	}
+    	if (arr.length == size + 1) {
+    		int len = arr.length;
+    		T[] array = (T[]) new Object[len * 2];
+    		for (int i = 0; i < size; i++) {
+    			array[i] = arr[i];
+    		}
+    		arr = array;
+    	}
+    	size++;
+    	arr[size] = item;
+    	upheap(size);
+    }
+
+    private void upheap(int j) {
+    	if (j > 1) {
+    		//System.out.println(arr[j]);
+    		if (arr[j].compareTo(arr[j / 2]) > 0) { 
+    			swap(j, j / 2);
+    			upheap(j / 2);
+    		}
+    	}    	
+    }
+    
+    private void swap(int i, int j) {
+    	T b;
+		b = arr[j];
+		arr[j] = arr[i];
+		arr[i] = b;
+    }
+    
+    @Override
+    public T remove() {
+    	if (size == 0) {
+    		throw new java.util.NoSuchElementException();
+    	}
+    	T b = arr[1];
+    	arr[1] = arr[size];
+    	arr[size] = null;
+    	downheap(1);
+    	size--;
+    	return b;
+    }
+
+    private void downheap(int j) {
+    	int s;
+    	if (2 * j < size) {
+    		s = 2 * j;
+    		if ( 2 * j + 1 < size) {
+    			if (arr[s].compareTo(arr[2 * j + 1]) > 0)
+    				s = 2 * j + 1;
+    		}
+    		if (arr[s].compareTo(arr[j]) > 0) {
+        		swap(s, j);
+        		downheap(s);
+        	}
+    	}   	
+    }
+    
+    @Override
+    public boolean isEmpty() {
+    	return (size == 0);
+    }
+
+    @Override
+    public int size() {
+    	return size;
+    }
+
+    @Override
+    public void clear() {
+    	for (int i = 0; i < size; i++) {
+    		arr[i] = null;
+    	}
+    	size = STARTING_SIZE;
+    }
+
+    @Override
+    public Comparable[] getBackingArray() {
+        return arr;
+    }
+}

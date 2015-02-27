@@ -1,0 +1,120 @@
+public class MaxHeap<T extends Comparable<? super T>> implements
+        HeapInterface<T> {
+
+    private T[] arr;
+    private int size;
+
+    // Do not add any more instance variables
+
+    /**
+     * Creates a MaxHeap.
+     */
+    public MaxHeap() {
+        arr = (T[]) new Comparable[STARTING_SIZE];
+        size = 0;
+    }
+
+    @Override
+    public void add(T item) {
+        if (item == null) {
+            throw new IllegalArgumentException();
+        }
+        if (arr.length == size + 1) {
+            int len = arr.length;
+            T[] array = (T[]) new Comparable[len * 2];
+            for (int i = 0; i <= size; i++) {
+                array[i] = arr[i];
+            }
+            arr = array;
+        }
+        size++;
+        arr[size] = item;
+        upheap(size);
+    }
+
+    /**
+     * restore the heap property
+     * 
+     * @param j
+     *            move the element at index j higher if necessary
+     */
+    private void upheap(int j) {
+        if (j > 1) {
+            if (arr[j].compareTo(arr[j / 2]) > 0) {
+                swap(j, j / 2);
+                upheap(j / 2);
+            }
+        }
+    }
+
+    /**
+     * swap the values at two given indices
+     * 
+     * @param i
+     *            one of the two indices
+     * @param j
+     *            the other index
+     */
+    private void swap(int i, int j) {
+        T b;
+        b = arr[j];
+        arr[j] = arr[i];
+        arr[i] = b;
+    }
+
+    @Override
+    public T remove() {
+        if (size == 0) {
+            throw new java.util.NoSuchElementException();
+        }
+        T b = arr[1];
+        arr[1] = arr[size];
+        arr[size] = null;
+        size--;
+        downheap(1);
+        return b;
+    }
+
+    /**
+     * restore the heap property
+     * 
+     * @param j
+     *            move the element at index j lower if necessary
+     */
+    private void downheap(int j) {
+        int l;
+        if (2 * j <= size) {
+            l = 2 * j;
+            if (2 * j + 1 <= size) {
+                if (arr[l].compareTo(arr[2 * j + 1]) <= 0) {
+                    l = 2 * j + 1;
+                }
+            }
+            if (arr[l].compareTo(arr[j]) > 0) {
+                swap(l, j);
+                downheap(l);
+            }
+        }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return (size == 0);
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public void clear() {
+        arr = (T[]) new Comparable[STARTING_SIZE];
+        size = 0;
+    }
+
+    @Override
+    public Comparable[] getBackingArray() {
+        return arr;
+    }
+}
