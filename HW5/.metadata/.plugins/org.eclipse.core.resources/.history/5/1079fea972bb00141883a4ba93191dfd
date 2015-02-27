@@ -1,0 +1,188 @@
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayList;
+
+public class HashMap<K, V> implements HashMapInterface<K, V> {
+
+    // Do not make any new instance variables.
+    private MapEntry<K, V>[] table;
+    private int size;
+
+    /**
+     * Create a hash map with no entries.
+     */
+    public HashMap() {
+        // Initialize your hashtable here.
+    	table = (MapEntry<K, V>[]) new MapEntry[STARTING_SIZE];
+    }
+
+    @Override
+    public V add(K key, V value) {
+    	MapEntry<K, V> entry = new MapEntry<K, V>(key, value);;
+    	int hashvalue, index;
+    	int k = 1;
+    	if (key == null || value == null) {
+    		throw new IllegalArgumentException ("key or value is null");
+    	}
+    	if ((size + 1) > table.length * MAX_LOAD_FACTOR) {
+    		regrow();
+    	} 
+    	hashvalue = key.hashCode();
+		index = hashvalue % table.length;	
+		while (table[index] != null && !table[index].isRemoved()) {
+			K r = table[index].getKey();
+			if (table[index].getKey().equals(key)) {
+				V res;
+				res = table[index].getValue();
+				table[index].setValue(value);
+				return res;
+			}
+			index = (index + 2 * k - 1) % table.length;
+			k++;
+			if (k == table.length) {
+				regrow();
+				index = hashvalue % table.length;
+				k = 1;
+			}
+		} 
+		table[index] = entry;
+		table[index].setRemoved(false);
+		size++;
+		System.out.println("index  " + index + "size  " + size + "entry  " + table[index]);
+		return null;
+    }
+    
+    private void regrow() {
+    	int hashvalue;
+    	int index, k;
+    	k = 1;
+    	MapEntry<K,V>[] arr1 = (MapEntry<K,V>[]) new MapEntry[table.length * 2 + 1];
+    	for (int i = 0; i < table.length; i++) {
+    		if (table[i] != null && !table[i].isRemoved()) {
+    			hashvalue = table[i].getKey().hashCode();
+        		index = hashvalue % arr1.length;
+        		while (arr1[index] != null ) {
+        			index = (index + 2 * k - 1) % arr1.length;
+        			k++;
+        		}
+        		arr1[index] = table[i];
+    		}   		
+    	}
+    	for (MapEntry<K,V> entry: arr1) {
+    		if (entry != null) {
+    			entry.setRemoved(false);
+    		}  		
+    	}
+    	table = arr1;
+    }
+
+    @Override
+    public V remove(K key) {
+    	V res;
+    	int index;
+    	index = gethelper(key);
+    	res = table[index].getValue();
+    	table[index].setRemoved(true);
+    	size--;
+   	 	return res;
+    }
+
+    @Override
+    public V get(K key) {
+    	int index;
+    	index = gethelper(key);
+    	return table[index].getValue();
+    }
+
+    private int gethelper(K key) {
+    	int index, k = 0;
+    	if (key == null) {
+    		throw new IllegalArgumentException ("key is null");
+    	}
+    	index = key.hashCode();
+    	if (table[index] == null) {
+    		throw new java.util.NoSuchElementException ("the key does not exist");
+    	}
+    	while (!table[index].getKey().equals(key)) {
+    		k++;
+    		index = (index + k * k) % table.length;
+    		if (table[index] == null) {
+        		throw new java.util.NoSuchElementException ("the key does not exist");
+        	}
+    		if (k == table.length) {
+    			throw new java.util.NoSuchElementException ("the key does not exist");
+    		}
+    	}
+    	if (table[index].isRemoved() == true) {
+    		throw new java.util.NoSuchElementException ("the key does not exist");
+    	}
+    	return index;
+    }
+    
+    @Override
+    public boolean contains(K key) {
+    	int index, k = 0;
+    	if (key == null) {
+    		throw new IllegalArgumentException ("key is null");
+    	}
+    	index = key.hashCode();
+    	if (table[index] == null) {
+    		return false;
+    	}
+    	while (table[index].getKey() != key) {
+    		k++;
+    		index = (index + k * k) % table.length;
+    		if (table[index] == null) {
+        		return false;
+        	}
+    		if (k == table.length) {
+    			return false;
+    		}
+    	}
+    	if (table[index].isRemoved() == true) {
+    		return false;
+    	}
+    	return true;
+    }
+
+    @Override
+    public void clear() {
+    	MapEntry<K, V>[] arr = (MapEntry<K, V>[]) new MapEntry[STARTING_SIZE];
+    	table = arr;
+    	size = 0;
+    }
+
+    @Override
+    public int size() {
+    	return size;
+    }
+
+    @Override
+    public MapEntry<K, V>[] toArray() {
+    	return table;
+    }
+
+    @Override
+    public Set<K> keySet() {
+    	Set<K> set = new HashSet<K>();
+    	for (MapEntry<K, V> res: table) {
+    		if (res != null && !res.isRemoved()) {
+    			set.add(res.getKey());
+    		}    		
+    	}
+    	return set;
+    }
+
+    @Override
+    public List<V> values() {
+    	List<V> list = new ArrayList<V>();
+    	for (MapEntry<K, V> res: table) {
+    		if (res != null && !res.isRemoved()) {
+    			list.add(res.getValue());
+    		}    		
+    	}
+    	return list;
+    }
+
+}
