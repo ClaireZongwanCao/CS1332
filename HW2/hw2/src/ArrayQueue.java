@@ -1,0 +1,100 @@
+/**
+ * ArrayQueue
+ * Implementation of a queue using
+ * an array as the backing structure
+ *
+ * @author Zongwan Cao
+ * @version 1.0
+ */
+public class ArrayQueue<T> implements QueueADT<T> {
+
+    // Do not add instance variables
+    private T[] backing;
+    private int size;
+    private int front;
+    private int back;
+
+    /**
+     * Construct an ArrayQueue with an
+     * initial capacity of INITIAL_CAPACITY
+     *
+     * Use Constructor Chaining
+     */
+    public ArrayQueue() {
+    	this(INITIAL_CAPACITY);
+    	size = 0;
+    	back = -1;
+    	front = -1;
+    }
+
+    /**
+     * Construct an ArrayQueue with the specified
+     * initial capacity of initialCapacity
+     * @param initialCapacity Initial capacity of the backing array.
+     */
+    public ArrayQueue(int initialCapacity) {
+    	backing = (T[]) new Object[initialCapacity];
+    	size = 0;
+    	back = -1;
+    	front = -1;
+    }
+
+    @Override
+    public void enqueue(T data) {
+    	if (data == null) {
+    		throw new IllegalArgumentException("null");
+    	}
+    	if (backing.length == size) {
+    		regrow();
+    	}
+    	back = (back + 1) % backing.length;
+    	backing[back] = data;
+    	size++;
+    }
+
+    private void regrow() {
+    	T[] arr = (T[]) new Object[size * 2];
+		int i, j = 0;
+		for (i = front + 1; i < size; j++,i++) {
+			arr[j] = backing[i];
+		}
+		for (i = 0; i < front + 1; j++,i++) {
+			arr[j] = backing[i];
+		}
+		backing = arr;
+		front = -1;
+		back = size - 1;
+	}
+    
+    @Override
+    public T dequeue() {
+    	if (isEmpty()) {
+    		throw new java.util.NoSuchElementException("null");
+    	}
+    	front = (front + 1) % backing.length;
+    	T a = backing[front];
+    	backing[front] = null;
+    	size--;
+    	return a;
+    }
+
+    @Override
+    public int size() {
+    	return size ;
+    }
+
+    @Override
+    public boolean isEmpty() {
+    	return (size == 0);
+    }
+
+    /**
+     * Returns the backing array for your queue.
+     * This is for grading purposes only. DO NOT EDIT THIS METHOD.
+     *
+     * @return the backing array
+     */
+    public Object[] getBackingArray() {
+        return backing;
+    }
+}
